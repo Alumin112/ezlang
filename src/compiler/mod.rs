@@ -1,6 +1,10 @@
 mod translator;
+mod utils;
 
-use cranelift::prelude::*;
+use cranelift::prelude::{
+    codegen, settings, AbiParam, EntityRef, FunctionBuilder, FunctionBuilderContext, InstBuilder,
+    Variable,
+};
 use cranelift_jit::{JITBuilder, JITModule};
 use cranelift_module::{DataContext, Linkage, Module, ModuleError};
 use std::slice;
@@ -34,7 +38,7 @@ impl<'a> JIT<'a> {
 
     pub fn compile(&mut self, analyzed: Analyzed) -> Result<fn() -> i64, ModuleError> {
         self.translate(analyzed)?;
-        // println!("{}", self.ctx.func);
+        println!("{}", self.ctx.func);
 
         let id =
             self.module

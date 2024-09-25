@@ -1,6 +1,6 @@
-use cranelift::prelude::*;
-use cranelift_jit::JITModule;
-use cranelift_module::{DataContext, Module};
+use cranelift::prelude::{
+    types, FunctionBuilder, InstBuilder, IntCC, MemFlags, Value, Variable,
+};
 use std::collections::HashMap;
 
 use crate::{
@@ -19,7 +19,7 @@ pub struct FunctionTranslator<'a> {
     pub(crate) lookup: Vec<HashMap<&'a str, (Vec<usize>, usize)>>,
     pub(crate) variables: Vec<Variable>,
     pub(crate) current_scope: usize,
-    pub(crate) module: &'a mut JITModule,
+    // pub(crate) module: &'a mut JITModule,
 }
 
 impl<'a> FunctionTranslator<'a> {
@@ -211,30 +211,30 @@ impl<'a> FunctionTranslator<'a> {
                 self.builder.seal_block(exit_block);
                 self.builder.ins().iconst(self.int, 0)
             }
-            SK::Call => {
-                let mut iter = node.children_with_leaves(tree);
-                let f = self.translate_element(tree, iter.next().unwrap());
-                let args = iter.collect::<Vec<_>>();
-                let mut sig = self.module.make_signature();
-                for arg in &args {
-                    let t = arg.get(tree).type_().type_().unwrap();
-                    let t = match t {
-                        ValueType::Number | ValueType::Pointer(_) => self.int,
-                        _ => todo!(),
-                    };
-                    sig.params.push(AbiParam::new(t));
-                }
+            // SK::Call => {
+            //     let mut iter = node.children_with_leaves(tree);
+            //     let f = self.translate_element(tree, iter.next().unwrap());
+            //     let args = iter.collect::<Vec<_>>();
+            //     let mut sig = self.module.make_signature();
+            //     for arg in &args {
+            //         let t = arg.get(tree).type_().type_().unwrap();
+            //         let t = match t {
+            //             ValueType::Number | ValueType::Pointer(_) => self.int,
+            //             _ => todo!(),
+            //         };
+            //         sig.params.push(AbiParam::new(t));
+            //     }
 
-                sig.returns.push(AbiParam::new(self.int));
+            //     sig.returns.push(AbiParam::new(self.int));
 
-                let mut arg_values = Vec::new();
-                for arg in args {
-                    arg_values.push(self.translate_element(tree, arg))
-                }
-                let sig_ref = self.builder.import_signature(sig);
-                let call = self.builder.ins().call_indirect(sig_ref, f, &arg_values);
-                self.builder.inst_results(call)[0]
-            }
+            //     let mut arg_values = Vec::new();
+            //     for arg in args {
+            //         arg_values.push(self.translate_element(tree, arg))
+            //     }
+            //     let sig_ref = self.builder.import_signature(sig);
+            //     let call = self.builder.ins().call_indirect(sig_ref, f, &arg_values);
+            //     self.builder.inst_results(call)[0]
+            // }
             SK::ReLet => {
                 let mut iter = node.children_with_leaves(tree);
                 let a = iter.next().unwrap();
@@ -326,27 +326,27 @@ impl<'a> FunctionTranslator<'a> {
                 },
             ),
             SK::SemiColon => self.builder.ins().iconst(self.int, 0),
-            SK::String => {
-                let data = match leaf
-                    .data()
-                    .as_ref()
-                    .unwrap()
-                    .into_value()
-                    .value
-                    .as_ref()
-                    .unwrap()
-                {
-                    ValueData::String(s) => s.clone().into_boxed_slice(),
-                    _ => unreachable!(),
-                };
-                let id = self.module.declare_anonymous_data(false, false).unwrap();
-                let mut data_ctx = DataContext::new();
-                data_ctx.define(data);
-                self.module.define_data(id, &data_ctx).unwrap();
-                data_ctx.clear();
-                let value = self.module.declare_data_in_func(id, self.builder.func);
-                self.builder.ins().global_value(types::I64, value)
-            }
+            // SK::String => {
+            //     let data = match leaf
+            //         .data()
+            //         .as_ref()
+            //         .unwrap()
+            //         .into_value()
+            //         .value
+            //         .as_ref()
+            //         .unwrap()
+            //     {
+            //         ValueData::String(s) => s.clone().into_boxed_slice(),
+            //         _ => unreachable!(),
+            //     };
+            //     let id = self.module.declare_anonymous_data(false, false).unwrap();
+            //     let mut data_ctx = DataContext::new();
+            //     data_ctx.define(data);
+            //     self.module.define_data(id, &data_ctx).unwrap();
+            //     data_ctx.clear();
+            //     let value = self.module.declare_data_in_func(id, self.builder.func);
+            //     self.builder.ins().global_value(types::I64, value)
+            // }
             s => unreachable!("{s}"),
         }
     }

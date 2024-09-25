@@ -84,7 +84,11 @@ impl<'a> Analyzer<'a> {
     fn resolve_type(&mut self, loc: usize, i: usize) {
         match &self.memory[loc].type_ {
             MaybeTyped::UnTyped(_) => {
-                let MaybeTyped::UnTyped(id) = std::mem::replace(&mut self.memory[loc].type_, MaybeTyped::InProgress) else {unreachable!()};
+                let MaybeTyped::UnTyped(id) =
+                    std::mem::replace(&mut self.memory[loc].type_, MaybeTyped::InProgress)
+                else {
+                    unreachable!()
+                };
                 self.memory[loc].type_ = MaybeTyped::Typed(self.compute_type(id, i));
             }
             MaybeTyped::InProgress => panic!("Loopoz"),

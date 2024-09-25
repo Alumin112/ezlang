@@ -18,14 +18,14 @@ use crate::analyzer::AnalysisResult;
 
 pub fn compile(file: String, source: &str) -> Result<i64, Vec<Error>> {
     let parsed = Parser::new(source).parse();
-    println!("{:?}\n", parsed.parse);
+    // println!("{:?}\n", parsed.parse);
     let analyzed = Analyzer::new(source, parsed).analyze();
-    println!("{}\n", analyzed.analyzed.tree);
+    // println!("{}\n", analyzed.analyzed.tree);
     let AnalysisResult {
         mut errors,
         analyzed,
     } = TypeChecker::new(source, analyzed).analyze();
-    // println!("{}\n", analyzed.tree);
+    println!("{}\n", analyzed.tree);
     if errors.is_empty() {
         let mut jit = JIT::new(source);
         match jit.compile(analyzed) {
