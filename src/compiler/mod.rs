@@ -146,7 +146,6 @@ impl<'a> JIT<'a> {
             lookup,
             variables,
             current_scope: 0,
-            module: &mut self.module,
         };
 
         let root = tree.node(AnalyzedTree::ROOT);
